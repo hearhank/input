@@ -8,9 +8,7 @@ include(version.pri)
 mac {
   QGIS_QML_DIR = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/qml
   QGIS_PREFIX_PATH = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS
-
   QGIS_QUICK_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/lib/qgis_quick.framework
-  QGIS_NATIVE_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks/qgis_native.framework
   QGIS_CORE_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks/qgis_core.framework
 
   exists($${QGIS_CORE_FRAMEWORK}/qgis_core) {
@@ -21,15 +19,35 @@ mac {
 
   INCLUDEPATH += \
     $${QGIS_QUICK_FRAMEWORK}/Headers \
-    $${QGIS_NATIVE_FRAMEWORK}/Headers \
     $${QGIS_CORE_FRAMEWORK}/Headers
 
   LIBS += -F$${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/lib  \
           -F$${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks
 
   LIBS += -framework qgis_quick \
-          -framework qgis_native \
           -framework qgis_core
+}
+
+macx {
+  QGIS_NATIVE_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks/qgis_native.framework
+  INCLUDEPATH += \
+    $${QGIS_NATIVE_FRAMEWORK}/Headers
+
+  LIBS += -framework qgis_native
+}
+
+ios {
+  CONFIG -= bitcode
+
+  # https://stackoverflow.com/a/36908701/2838364
+  # link to the lib:
+  LIBS += -L../mylib -lmylib
+  # make the app find the libs:
+  QMAKE_RPATHDIR = @executable_path/Frameworks
+  # deploy the libs:
+  mylib.files = $$OUT_PWD/mylib/libmylib.1.dylib
+  mylib.path = Frameworks
+  QMAKE_BUNDLE_DATA += mylib
 }
 
 # Linux+Android specific includes/libraries paths
